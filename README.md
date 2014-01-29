@@ -12,17 +12,18 @@ more about bash scripting.
 ## Install
 
 
-1. Git this repo
-2. cd directory of the repo
-   Edit in header.h const char path[] = "/etc/openvpn/"; 
+1. git clone https://github.com/mahadirz/opnvpnstatus
+2. cd opnvpnstatus
+
+3. Edit in header.h const char path[] = "/etc/openvpn/"; 
    and const int port = 8081; to installed openvpn
    and with unused port number (you may leave this as 
    default).
    
-3. make
-4. chmod +x opnvpnstatus
-5. cp opnvpnstatus /usr/local/bin/
-6. To run  in daemon mode use: opnvpnstatus
+4. make
+5. chmod +x opnvpnstatus
+6. cp opnvpnstatus /usr/local/bin/
+7. To run in daemon mode use: opnvpnstatus
    debug mode: opnvpnstatus -debug
 
 
