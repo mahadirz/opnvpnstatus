@@ -90,7 +90,7 @@ void webHttp(void)
         //open directory
         dp = opendir (path);
 
-        NUM_FILES = i = 0;
+        NUM_FILES = i = NUM_OF_STATS_ENTRIES = 0;
         strcpy(conf,"\0");
         strcpy(tmpname,"\0");
         opnstats  =  NULL;
@@ -120,6 +120,7 @@ void webHttp(void)
                     printf("Reading status file %s \n",opnstats[NUM_FILES].BasicConf.status);
 
                     NUM_OF_STATS_ENTRIES = ReadStatusFile(opnstats[NUM_FILES].BasicConf.status,&opnstats[NUM_FILES]);
+					printf("NUM_OF_STATS_ENTRIES: %d\n",NUM_OF_STATS_ENTRIES);
                     if(NUM_OF_STATS_ENTRIES <= 0){
                         printf("No connected clients for %s\n",opnstats[NUM_FILES].BasicConf.status);
                         continue;
@@ -136,7 +137,7 @@ void webHttp(void)
             perror ("Couldn't open the directory");
 
         JSON = NULL;
-        printf("Formating input to JSON\n");
+        printf("Formating input to JSON \nNUM_FILES: %d\n",NUM_FILES);
         JSON = FormatToJSON(opnstats,NUM_FILES);
 
         printf("JSON: %s\n\n",JSON);
@@ -149,7 +150,7 @@ void webHttp(void)
         printf("HttpResponse: %s",httpresponse);
 
 
-        write(client_fd, httpresponse, strlen(httpresponse) - 1); /*-1:'\0'*/
+        write(client_fd, httpresponse, strlen(httpresponse) ); /*-1:'\0'*/
         close(client_fd);
 
 
@@ -262,7 +263,7 @@ int IsConfExt(char  filename[])
 int ReadStatusFile(char *filename,OpnStatusResult * opnstats){
 	FILE * pfile;
 	char buffer[1025],*pch,tmp[100];
-	int i,j,entry=0;
+	int i,j=0,entry=0;
 
 	//reset to null to prevent error in realloc
 	opnstats->ArrStatus = NULL;
@@ -288,6 +289,7 @@ int ReadStatusFile(char *filename,OpnStatusResult * opnstats){
 			if(strcmp(buffer,"ROUTING TABLE\n") == 0)
 				break;
 
+
 			//create dynamic array of ArrStatus
 			opnstats->ArrStatus = (OpnStatus *) realloc(opnstats->ArrStatus,sizeof(OpnStatus)*(entry+1));
 			if(opnstats->ArrStatus == NULL){
@@ -302,31 +304,29 @@ int ReadStatusFile(char *filename,OpnStatusResult * opnstats){
 				if(j==0){
 					strcpy(opnstats->ArrStatus[entry].CommonName,pch);
 					//debug
-					//printf("%s\n",opnstats->ArrStatus[j].CommonName);
+					printf("Common Name: %s ",opnstats->ArrStatus[j].CommonName);
 				}
 				else if(j==1){
 					strcpy(opnstats->ArrStatus[entry].RealAddress,pch);
 					//debug
-					//printf("%s\n",opnstats->ArrStatus[j].RealAddress);
+					printf("Real Address %s ",opnstats->ArrStatus[j].RealAddress);
 				}
 				else if(j==2){
 					strcpy(opnstats->ArrStatus[entry].BytesR,pch);
 					//debug
-					// printf("%s\n",opnstats->ArrStatus[j].BytesR);
+					printf("BytesR: %s ",opnstats->ArrStatus[j].BytesR);
 				}
 				else if(j==3){
 					strcpy(opnstats->ArrStatus[entry].BytesS,pch);
 					//debug
-					// printf("%s\n",opnstats->ArrStatus[j].BytesS);
+					printf("BytesS: %s ",opnstats->ArrStatus[j].BytesS);
 				}
 				else if(j==4){
 					pch[strlen(pch)-1] = '\0';
 					strcpy(opnstats->ArrStatus[entry].ConnectedSince,pch);
 					//debug
-					//printf("%s\n",opnstats->ArrStatus[j].ConnectedSince);
+					printf("Connected Since: %s ",opnstats->ArrStatus[j].ConnectedSince);
 				}
-
-
 
 				j++;
 				pch = strtok(NULL,",");
@@ -335,7 +335,7 @@ int ReadStatusFile(char *filename,OpnStatusResult * opnstats){
 		}
 	}
 	fclose(pfile);
-	return j;
+	return entry;
 
 }
 
@@ -352,7 +352,7 @@ char * FormatToJSON(OpnStatusResult OpnStruct[],int Total){
 	char * OutputText;
 
 	if(Total <= 0){
-		OutputText = (char*) malloc(strlen("[{\"client\":\"empty\"}\"]")+1);
+		OutputText = (char*) malloc(strlen("[{\"client\":\"empty\"}\"]")+2);
 		strcpy(OutputText,"[{\"client\":\"empty\"}\"]");
 		return OutputText;
 	}
