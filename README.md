@@ -22,8 +22,8 @@ more about bash scripting.
 3. make
 4. chmod +x opnvpnstatus
 5. cp opnvpnstatus /usr/local/bin/
-6. To run daemon mode use: opnvpnstatus
-   console mode: opnvpnstatus nodaemon
+6. To run  in daemon mode use: opnvpnstatus
+   debug mode: opnvpnstatus -debug
 
 
 ## License

@@ -43,7 +43,7 @@ int main( int argc, char * argv[])
     //if command line set to program
     if(argc == 2)
     {
-        if(strcmp(argv[1],"nodaemon")== 0)
+        if(strcmp(argv[1],"-debug")== 0)
         {
             webHttp();
             return (0);

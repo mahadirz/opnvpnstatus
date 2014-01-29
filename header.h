@@ -24,12 +24,12 @@ THE SOFTWARE.
 typedef struct {
 	char port[6];
 	char proto[4];
-	char status[255];
+	char status[256];
 
 }Opnconf;
 
 typedef struct{
-	char CommonName[255] ;
+	char CommonName[256] ;
 	char RealAddress[30];
 	char BytesR[10],BytesS[10];
 	char ConnectedSince[30];
@@ -47,8 +47,8 @@ const int port = 8081;
 
 char * FormatToJSON(OpnStatusResult[],int );
 int ReadStatusFile(char *,OpnStatusResult * );
-void parseConf(char * ,Opnconf * );
-int parse_conffile(char * ,char * );
+int parse_conffile(char * ,Opnconf * );
 int IsConfExt(char  []);
 void webHttp(void);
+int Is_FileExist(char *);
 

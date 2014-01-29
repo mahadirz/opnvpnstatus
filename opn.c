@@ -21,6 +21,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+/**
+Check if file exist
+return 1 if exist
+or 0 if not exist or
+error open the file
+**/
+int Is_FileExist(char * filename){
+    char fullpath[256];
+    FILE *pfile;
+    strcpy(fullpath,path);
+    strcat(fullpath,filename);
+    if((pfile = fopen(fullpath,"r"))){
+        fclose(pfile);
+        return 1;
+    }
+    return 0;
+}
+
 
 void webHttp(void)
 {
@@ -86,15 +104,27 @@ void webHttp(void)
                 strcpy(tmpname,ep->d_name);
                 if(IsConfExt(ep->d_name) == 1)
                 {
+                    printf("Parsing config file %s\n",tmpname);
+                    parse_conffile(tmpname,&s);
 
-                    parse_conffile(tmpname,conf);
-                    parseConf(conf,&s);
+                    if(!Is_FileExist(s.status)){
+                        printf("Status log not exist\n");
+                        continue;
+                    }
 
                     //Create dynamic array of opnstats to store all stats from all status files
                     opnstats = (OpnStatusResult *) realloc(opnstats,sizeof(OpnStatusResult) * (NUM_FILES+1));
 
                     opnstats[NUM_FILES].BasicConf = s;
+
+                    printf("Reading status file %s \n",opnstats[NUM_FILES].BasicConf.status);
+
                     NUM_OF_STATS_ENTRIES = ReadStatusFile(opnstats[NUM_FILES].BasicConf.status,&opnstats[NUM_FILES]);
+                    if(NUM_OF_STATS_ENTRIES <= 0){
+                        printf("No connected clients for %s\n",opnstats[NUM_FILES].BasicConf.status);
+                        continue;
+                    }
+
                     opnstats[NUM_FILES].TotalStatus = NUM_OF_STATS_ENTRIES;
 
                     NUM_FILES++;
@@ -106,15 +136,17 @@ void webHttp(void)
             perror ("Couldn't open the directory");
 
         JSON = NULL;
+        printf("Formating input to JSON\n");
         JSON = FormatToJSON(opnstats,NUM_FILES);
-        //printf("%s\n\n",JSON);
+
+        printf("JSON: %s\n\n",JSON);
 
         httpresponse = (char*) malloc(strlen(httpheader)+ strlen(JSON) + 4);
         strcpy(httpresponse,httpheader);
         strcat(httpresponse,JSON);
         strcat(httpresponse,"\r\n");
 
-        //printf("%s",httpresponse);
+        printf("HttpResponse: %s",httpresponse);
 
 
         write(client_fd, httpresponse, strlen(httpresponse) - 1); /*-1:'\0'*/
@@ -132,26 +164,10 @@ void webHttp(void)
     }
 }
 
-
-int IsConfExt(char  filename[])
-{
-    char * pch=NULL;
-    int i=0;
-    pch = strtok(filename,".");
-    while(pch != NULL)
-    {
-        if(i == 1 && strcmp(pch,"conf") == 0)
-            return 1;
-        pch = strtok(NULL,".");
-        i++;
-    }
-    return 0;
-}
-
-int parse_conffile(char * configpath,char * tout){
+int parse_conffile(char * configpath,Opnconf * c){
 	FILE * pfile;
-	char buffer[1025] ,tmp[100];
-	int i=0;
+	char buffer[1025] ,tmp[100],*pch;
+	int n=0;
 
 	strcpy(tmp,path);
 	strcat(tmp,configpath);
@@ -182,42 +198,29 @@ int parse_conffile(char * configpath,char * tout){
 		if(buffer[0] == '\n')
 			continue;
 
-		//size += strlen(buffer)+1 ;
-		//output = (char *) realloc(output,size*sizeof(char));
-		if(i == 0)
-			strcpy(tout,buffer);
-		else
-			strncat(tout,buffer,strlen(buffer));
-		i++;
-	}
-	fclose(pfile);
-	return 1;
-
-}
-
-
-void parseConf(char * config,Opnconf * c){
-	char * pch,conc[100]={'\0'};
-	int n=0,i,cc=0;
-	//read the config
-	for(i=0; i  < strlen(config); i++){
-		if(config[i] == '\n' && conc[0] != '\0'){
-			conc[cc] = '\0';
-			cc = 0;
-			pch = strtok(conc," ");
-			while(pch != NULL){
+		pch = strtok(buffer," ");
+		while(pch != NULL){
 				if(n == 1){
 					strcpy(c->status,pch);
+					//remove newline at the end of string
+					if(c->status[strlen(c->status)-1] == '\n')
+					   c->status[strlen(c->status)-1] = '\0';
 					n=0;
 					break;
 				}
 				else if(n == 2){
 					strcpy(c->port,pch);
+					//remove newline at the end of string
+					if(c->port[strlen(c->port)-1] == '\n')
+					   c->port[strlen(c->port)-1] = '\0';
 					n=0;
 					break;
 				}
 				else if(n == 3){
 					strcpy(c->proto,pch);
+					//remove newline at the end of string
+					if(c->proto[strlen(c->proto)-1] == '\n')
+					   c->proto[strlen(c->proto)-1] = '\0';
 					n=0;
 					break;
 				}
@@ -229,12 +232,29 @@ void parseConf(char * config,Opnconf * c){
 					n = 3;
 				pch = strtok (NULL, " ");
 			}
-			strcpy(conc,"\0");
-			continue;
-		}
-		conc[cc] = config[i];
-		cc++;
 	}
+	fclose(pfile);
+	return 1;
+
+}
+
+/**
+Check whether the file is
+conf extension
+**/
+int IsConfExt(char  filename[])
+{
+    char * pch=NULL;
+    int i=0;
+    pch = strtok(filename,".");
+    while(pch != NULL)
+    {
+        if(i == 1 && strcmp(pch,"conf") == 0)
+            return 1;
+        pch = strtok(NULL,".");
+        i++;
+    }
+    return 0;
 }
 
 
@@ -330,6 +350,13 @@ char * FormatToJSON(OpnStatusResult OpnStruct[],int Total){
 	char tmp[61440]; //60KB
 	char * tmp2=NULL;
 	char * OutputText;
+
+	if(Total <= 0){
+		OutputText = (char*) malloc(strlen("[{\"client\":\"empty\"}\"]")+1);
+		strcpy(OutputText,"[{\"client\":\"empty\"}\"]");
+		return OutputText;
+	}
+
 
 	//allocate 1 char + NULL terminated char
 	OutputText = (char*) malloc(sizeof(char) * 2);
