@@ -30,12 +30,12 @@ to compile this code.
 ## History
 
 - v29012014
-* First source code release
+** First source code release
 
 - v03022014
-* Add blowfish encryption (still beta)
-* Separate configuration file from source code
-* Fixed some linux line feed reading
+** Add blowfish encryption (still beta)
+** Separate configuration file from source code
+** Fixed some linux line feed reading
 
 
 ## License
