@@ -1,8 +1,8 @@
 /*
-BETA Version 29012014
+Version 03022014
 Copyright 2014 Mahadir Lab
 
-ermission is hereby granted, free of charge, to any person obtaining a copy
+Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
@@ -23,9 +23,9 @@ THE SOFTWARE.
 
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -34,18 +34,29 @@ THE SOFTWARE.
 #include <arpa/inet.h>
 #include <err.h>
 #include <sys/stat.h>
+#include <openssl/blowfish.h>
 
-#include "header.h"
-#include "opn.c"
 
-int main( int argc, char * argv[])
+char path[256] ;
+int DEBUG_MODE = 0;
+
+#include "Configuration.c"
+#include "utility.c"
+#include "OpenVPNConfig.c"
+#include "OpenVPNStatus.c"
+#include "JSON_Encode.c"
+#include "http.c"
+
+
+int main(int argc, char * argv[])
 {
     //if command line set to program
     if(argc == 2)
     {
         if(strcmp(argv[1],"-debug")== 0)
         {
-            webHttp();
+            DEBUG_MODE = 1;
+            OpnStatus_webHttp();
             return (0);
         }
         else
@@ -64,14 +75,14 @@ int main( int argc, char * argv[])
         // Indication of fork() failure
         if (process_id < 0)
         {
-            printf("fork failed!\n");
+            printf("Daemon fork failed!\n");
             // Return failure in exit status
             exit(1);
         }
         // PARENT PROCESS. Need to kill it.
         if (process_id > 0)
         {
-             //printf("process_id of child process %d \n", process_id);
+            printf("\nDaemon successfuly created with pid %d \n", process_id);
             // return success in exit status
             exit(0);
         }
@@ -82,11 +93,12 @@ int main( int argc, char * argv[])
         if(sid < 0)
         {
             // Return failure
+            printf("Daemon failed!\n");
             exit(1);
         }
         // Change the current working directory
-        chdir(path);
-       // Close stdin. stdout and stderr
+        //chdir("/root/");
+        // Close stdin. stdout and stderr
         close(STDIN_FILENO);
         close(STDOUT_FILENO);
         close(STDERR_FILENO);
@@ -94,11 +106,11 @@ int main( int argc, char * argv[])
 
         // Implement and call some function that does core work for this daemon.
         // call http which process the function
-        webHttp();
-
-        return (0);
+        OpnStatus_webHttp();
+        return 0;
     }
 }
+
 
 
 

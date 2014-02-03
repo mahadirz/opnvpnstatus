@@ -1,8 +1,7 @@
 /*
-BETA Version 29012014
 Copyright 2014 Mahadir Lab
 
-ermission is hereby granted, free of charge, to any person obtaining a copy
+Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
@@ -21,34 +20,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-typedef struct {
-	char port[6];
-	char proto[4];
-	char status[256];
 
-}Opnconf;
-
-typedef struct{
-	char CommonName[256] ;
-	char RealAddress[30];
-	char BytesR[10],BytesS[10];
-	char ConnectedSince[30];
-}OpnStatus;
-
-typedef struct{
-	Opnconf BasicConf;
-	OpnStatus * ArrStatus;
-	int TotalStatus;
-}OpnStatusResult;
+#ifndef _UTILITY_H_
+#define _UTILITY_H_
 
 
-const char path[] = "/etc/openvpn/";
-const int port = 8081;
 
-char * FormatToJSON(OpnStatusResult[],int );
-int ReadStatusFile(char *,OpnStatusResult * );
-int parse_conffile(char * ,Opnconf * );
-int IsConfExt(char  []);
-void webHttp(void);
+char * str_tolower(char * );
+void CombinePath(const char * ,char *);
 int Is_FileExist(char *);
+int IsConfExt(char  []);
 
+
+#define FREE_IF_NOT_NULL(a) if (a != NULL) free(a)
+
+#endif
