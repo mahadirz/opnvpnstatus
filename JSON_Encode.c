@@ -59,12 +59,13 @@ char * FormatToJSON(OpnStatusResult OpnStruct[],int Total){
 		//clear tmp
 		strcpy(tmp,"\0");
 		for(j=0; j<OpnStruct[i].TotalStatus; j++){
+
 			if(j== 0){
-				sprintf(tmp,"[\"%s\",\"%s\",%s,%s,\"%s\"]",OpnStruct[i].ArrStatus[j].CommonName,OpnStruct[i].ArrStatus[j].RealAddress, \
+				sprintf(tmp,"[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]",OpnStruct[i].ArrStatus[j].CommonName,OpnStruct[i].ArrStatus[j].RealAddress, \
                     OpnStruct[i].ArrStatus[j].BytesR,OpnStruct[i].ArrStatus[j].BytesS,OpnStruct[i].ArrStatus[j].ConnectedSince);
 			}
 			else {
-				sprintf(tmp,"%s,[\"%s\",\"%s\",%s,%s,\"%s\"]",tmp,OpnStruct[i].ArrStatus[j].CommonName,OpnStruct[i].ArrStatus[j].RealAddress, \
+				sprintf(tmp,"%s,[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]",tmp,OpnStruct[i].ArrStatus[j].CommonName,OpnStruct[i].ArrStatus[j].RealAddress, \
                     OpnStruct[i].ArrStatus[j].BytesR,OpnStruct[i].ArrStatus[j].BytesS,OpnStruct[i].ArrStatus[j].ConnectedSince);
 			}
 

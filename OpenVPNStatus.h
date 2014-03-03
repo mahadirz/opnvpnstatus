@@ -27,7 +27,7 @@ THE SOFTWARE.
 typedef struct{
 	char CommonName[256] ;
 	char RealAddress[30];
-	char BytesR[10],BytesS[10];
+	char BytesR[30],BytesS[30];
 	char ConnectedSince[30];
 }OpnStatus;
 
